@@ -37,38 +37,38 @@ const args = yargs(hideBin(process.argv))
       })
       .argv;
 
-      const now = new Date();
-      console.log(now);
+      let now = new Date();
       if (args.add) {
         if (args.year) {
-          now = now.getFullYear() + args[3];
+          now = now.getFullYear() + Number(args._);
           console.log(now);
-        } else if (args.month){
-          now = now.getMonts() + args[3] + 1;
+        } else if (args.month) {
+          now = now.getMonts() + Number(args._) + 1;
           console.log(now);
         } else if (args.date) {
-          now = now.getDate() + args[3];
+          now = now.getDate() + Number(args._);
           console.log(now); 
         }
       } else if (args.sub){
         if (args.year) {
-            now = now.getFullYear() - args[3];
+            now = now.getFullYear() - Number(args._);
             console.log(now);
           } else if (args.month){
-            now = now.getMonts() - args[3] + 1;
+            now = now.getMonts() - Number(args._) + 1;
             console.log(now);
           } else if (args.date) {
-            now = now.getDate() - args[3];
+            now = now.getDate() - Number(args._);
             console.log(now); 
           }
-        }
+        } else {
       
-      if (args.year) {
-        console.log(now.getFullYear())
-      } else if (args.month){
-        console.log(now.getMonth()+1) 
-      } else if (args.date) {
-        console.log(now.getDate())
-      } else {
-        console.log(now.toISOString());
-      }
+         if (args.year) {
+           console.log(now.getFullYear())
+         } else if (args.month){
+           console.log(now.getMonth()+1) 
+         } else if (args.date) {
+           console.log(now.getDate())
+         } else {
+           console.log(now.toISOString());
+         }
+        }
