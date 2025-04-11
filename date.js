@@ -1,74 +1,126 @@
 #!/usr/bin/env node
 
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 
-const args = yargs(hideBin(process.argv))
-      .option('params1', {
-        alias: "current",
-        type: "boolean",
-        description: "current data",
-        default: "true"
-      })
-      .option('params 2', {
-        alias: "year" || "y",
-        type: "boolean",
-        description: "current year",
-      })
-      .option('params 3', {
-        alias: "month",
-        type: "boolean",
-        description: "current month",
-      })
-      .option('params 4', {
-        alias: "date",
-        type: "boolean",
-        description: "current date",
-      })
-      .option('params 5', {
-        alias: "add",
-        type: "boolean",
-        description: "add",
-      })
-      .option('params 6', {
-        alias: "sub",
-        type: "boolean",
-        description: "sub",
-      })
-      .argv;
+const handlers = {
+	year: {
+		get: Date.prototype.getFullYear,
+		set: Date.prototype.setFullYear,
+	},
+	month: {
+		get: Date.prototype.getMonth,
+		set: Date.prototype.setMonth,
+	},
+	day: {
+		get: Date.prototype.getDate,
+		set: Date.prototype.setDate,
+	},
+};
 
-      let now = new Date();
-      if (args.add) {
-        if (args.year) {
-          now = now.getFullYear() + Number(args._);
-          console.log(now);
-        } else if (args.month) {
-          now = now.getMonts() + Number(args._) + 1;
-          console.log(now);
-        } else if (args.date) {
-          now = now.getDate() + Number(args._);
-          console.log(now); 
-        }
-      } else if (args.sub){
-        if (args.year) {
-            now = now.getFullYear() - Number(args._);
-            console.log(now);
-          } else if (args.month){
-            now = now.getMonts() - Number(args._) + 1;
-            console.log(now);
-          } else if (args.date) {
-            now = now.getDate() - Number(args._);
-            console.log(now); 
-          }
-        } else {
-      
-         if (args.year) {
-           console.log(now.getFullYear())
-         } else if (args.month){
-           console.log(now.getMonth()+1) 
-         } else if (args.date) {
-           console.log(now.getDate())
-         } else {
-           console.log(now.toISOString());
-         }
-        }
+const options = Object.keys(handlers);
+
+yargs(hideBin(process.argv))
+	.command(
+		"current [--year|-y] [--month|-m] [--day|-d]",
+		"print current date in ISO format",
+		function (yargs) {
+			return yargs
+				.option("year", {
+					alias: "y",
+					describe: "Get year",
+					type: "boolean",
+				})
+				.option("month", {
+					alias: "m",
+					describe: "Get month",
+					type: "boolean",
+				})
+				.option("day", {
+					alias: "d",
+					describe: "Get day of the month",
+					type: "boolean",
+				});
+		},
+		function (argv) {
+			const today = new Date();
+
+			console.log("current date", today.toISOString());
+
+			for (const datePart in argv) {
+				if (options.includes(datePart)) {
+					console.log(datePart, handlers[datePart].get.call(today));
+				}
+			}
+		}
+	)
+	.command(
+		"add [--year|-y] [--month|-m] [--day|-d]",
+		"add date and print",
+		function (yargs) {
+			return yargs
+				.option("year", {
+					alias: "y",
+					describe: "Add years",
+					type: "number",
+				})
+				.option("month", {
+					alias: "m",
+					describe: "Add months",
+					type: "number",
+				})
+				.option("day", {
+					alias: "d",
+					describe: "Add days",
+					type: "number",
+				});
+		},
+		function (argv) {
+			modifyCurrentDate(argv, "add");
+		}
+	)
+	.command(
+		"sub [--year|-y] [--month|-m] [--day|-d]",
+		"subtract date and print",
+		function (yargs) {
+			return yargs
+				.option("year", {
+					alias: "y",
+					describe: "Subtract years",
+					type: "number",
+				})
+				.option("month", {
+					alias: "m",
+					describe: "Subtract months",
+					type: "number",
+				})
+				.option("day", {
+					alias: "d",
+					describe: "Subtract days",
+					type: "number",
+				});
+		},
+		function (argv) {
+			modifyCurrentDate(argv, "sub");
+		}
+	).argv;
+
+function modifyCurrentDate(argv, action = "add") {
+	const resultDate = new Date();
+
+	for (const datePart in argv) {
+		if (options.includes(datePart)) {
+			const diff = action === "sub" ? -argv[datePart] : argv[datePart];
+
+			handlers[datePart].set.call(
+				resultDate,
+				handlers[datePart].get.call(resultDate) + diff
+			);
+		}
+	}
+
+	const message =
+		action === "sub" ? "date in the past" : "date in the future";
+
+	console.log(message, resultDate.toISOString());
+}
